@@ -19,6 +19,12 @@ date: last-modified
 - Briefly review what empirical economics is and some key concepts.
 - Provide some examples of empirical research.
 - Provide some technical jargons used in empirical economics.
+- [Caution]{.alert}: I am not an expert. My definition and explanation may not be 100% accurate.
+
+## Acknowledgments
+
+- Many concepts and definitions are borrowed from Phil haile's slide on **Models, measurement, and the language of economics**.
+- Think of this as a concise, easier version of it.
 
 ## (Brief) What is empirical economics?
 
@@ -27,96 +33,206 @@ date: last-modified
 - While topics of empirical econmics are vast, its power lies in (mostly) coherent set of tools and tehcniques to understand topics of interest.
 - Due to its flexibility, tools and methods from empirical economics are widely used in other fields, such as psychology, sociology, political science, etc.
 
-## Important high-level concept: causal inference
-
 ## Example: legalized abortion and crime
 
 ## Types of empirical work
 
+While taxonomy can vary, we can broadly categorize empirical work into three types: [descriptive (correlation) and structural (causation).]{.alert}
+
 ## Descriptive
 
-## Structural
+[Descriptive empirical work]{.fg style="--col: #e64173"} refers to studies that describe the relationship between observed variables.
+
+- Example: 
+  - income is correlated with education level.
+  - crime rate is correlated with poverty rate.
+  - immigration is correlated with crime rate.
+
+Usually a great starting point for empirical research.
+
+## But correlation is not causation!
+
+![](cage.jpeg)
+
+- Many real world observations are correlated, but not always causally related.
+
+## But that is obvious!
+
+- Certain correlations can appear highly convincing as evidence of causality, but they are not.
+- Example: In many films and TV shows, it often seems that more attractive actors are not as strong in their acting abilities.
+- Maybe in general, there is a negative relationship between attractiveness and acting abilities?
+
+## Collider bias
+
+- Suppose actually there was no correlation.
+
+```{r}
+library(ggplot2)
+# Generate 1000 random values from 0 to 6 for talent and appearance
+set.seed(123)  # For reproducibility
+talent <- runif(1000, 0, 6)
+appearance <- runif(1000, 0, 6)
+
+# Create data frame
+actor_data <- data.frame(talent = talent, appearance = appearance)
+
+# Calculate correlation
+correlation <- cor(actor_data$talent, actor_data$appearance)
+
+# Create ggplot
+ggplot(data = actor_data) +
+  geom_point(mapping = aes(x = talent, y = appearance), 
+             alpha = 0.6, color = "steelblue") +
+  # Add correlation text
+  annotate("text", x = 5.5, y = 5.5, 
+           label = paste("Correlation =", round(correlation, 3)), 
+           size = 4, color = "darkblue", fontface = "bold") +
+  labs(x = "Talent", y = "Appearance", 
+       title = "Relationship between Talent and Appearance") +
+  theme_bw()
+```
+
+## Collider bias
+
+- In order to be an actor, one needs to be above some threshold that is comibnation of talent and appearance.
+
+```{r}
+library(ggplot2)
+# Generate 1000 random values from 0 to 6 for talent and appearance
+set.seed(123)  # For reproducibility
+talent <- runif(1000, 0, 6)
+appearance <- runif(1000, 0, 6)
+
+# Create data frame
+actor_data <- data.frame(talent = talent, appearance = appearance)
+
+# Create ggplot
+ggplot(data = actor_data) +
+  geom_point(mapping = aes(x = talent, y = appearance), 
+             alpha = 0.6, color = "steelblue") +
+  geom_abline(intercept = 6, slope = -1, color = "red", size = 1) +
+  geom_point(data = actor_data[actor_data$talent + actor_data$appearance < 6, ], 
+             mapping = aes(x = talent, y = appearance), 
+             alpha = 0.6, color = "gray") +
+  labs(x = "Talent", y = "Appearance", 
+       title = "Relationship between Talent and Appearance") +
+  theme_bw()
+```
+
+## Collider bias
+
+- Now get a correlation between talent and appearance only from points above the threshold.
+- It became -0.5!
+
+```{r}
+library(ggplot2)
+# Generate 1000 random values from 0 to 6 for talent and appearance
+set.seed(123)  # For reproducibility
+talent <- runif(1000, 0, 6)
+appearance <- runif(1000, 0, 6)
+
+# Create data frame
+actor_data <- data.frame(talent = talent, appearance = appearance)
+
+# Filter for blue dots (above threshold)
+blue_dots <- actor_data[actor_data$talent + actor_data$appearance >= 6, ]
+
+# Calculate correlation for blue dots
+correlation <- cor(blue_dots$talent, blue_dots$appearance)
+
+# Create ggplot
+ggplot(data = actor_data) +
+  geom_point(mapping = aes(x = talent, y = appearance), 
+             alpha = 0.6, color = "steelblue") +
+  geom_abline(intercept = 6, slope = -1, color = "red", size = 1) +
+  geom_point(data = actor_data[actor_data$talent + actor_data$appearance < 6, ], 
+             mapping = aes(x = talent, y = appearance), 
+             alpha = 0.6, color = "gray") +
+  # Add linear model line for blue dots
+  geom_smooth(data = blue_dots, 
+              mapping = aes(x = talent, y = appearance), 
+              method = "lm", se = FALSE, color = "darkblue", size = 1) +
+  # Add correlation text
+  annotate("text", x = 5.5, y = 5.5, 
+           label = paste("Correlation =", round(correlation, 3)), 
+           size = 4, color = "darkblue", fontface = "bold") +
+  labs(x = "Talent", y = "Appearance", 
+       title = "Relationship between Talent and Appearance") +
+  theme_bw()
+```
+
+
+## Structural and (structural) models
+
+[Structural empirical work]{.fg style="--col: #e64173"} aims to quantify certain features of the assumed data generating process (DGP, i.e. structure).
+
+- These features are usually implied to have causal interpretation.
+- Example: estimate demand for schools, demand for education, etc.
+- This is now more than just a statistical model. We are imposing certain assumptions (or structures) on the way data is generated. 
+- From now on, we will use the term "structural model" to refer to this type of model that characterizes the underlying true structure of the data generating process.
+
+## Causal inference and counterfactuals
+
+What is causal inference or causal effect?
+
+- Simply put, it is the effect of a change in one variable on another variable (but nothing else).
+- This induces the term [counterfactuals]{.alert}. Holding other things fixed means we need to consider what would have happened if the other things were different.
+- This parallel world notion of things is called [counterfactual]{.alert}.
+
+## Example: UPenn admissions and job market outcomes
+
+- Your research question: Does getting into Penn graduate school (X) increase your job market outcomes (Y)? ~~(We surely hope so!)~~
+
+![](dag1.png)
+
+- In application, you would run some regression like: $Y = \alpha + \beta X + \epsilon$.
+- But will this work? Will the estimate we get be the parameter that we want to get?
+
+## Example: UPenn admissions and job market outcomes
+
+- It might actually not be the effect of Penn but just that more talented students are more likely to get into Penn and more likely to have better job market outcomes.
+
+![](dag2.png)
+
+- In order to exactly estimate the CAUSAL effect of Penn admissions on job market outcomes, we need a way to shut down the effect of talent (Z).
 
 ## Identification
 
+- [Identification]{.alert} is also a term used a lot in empirical economics.
+- It is also related to what we just talked about.
+- Roughly speaking, identification is the process of finding a way to retrieve the (unique) causal effect of interest from the observed data.
+- So in the previous slide, people would say "we want to find a way to identify the causal effect of Penn admissions on job market outcomes".
+
 ## Ideal case? Randomized controlled trial (RCT)
+
+- Easiest way to identify the causal effect of interest is to run a randomized controlled trial (RCT).
+- Simple in theory since we can randomly assign the treatment (Penn admissions) to the subjects.
+- But in practice, it is often difficult to implement (randomly assigning Penn admissions is not feasible).
+
+## Quasi-experiments?/natural experiments?
+
+- Not ideal, but sometimes we can use certain real world intervention that acted as if random to identify the causal effect of interest.
+- Example: Effect of natural disasters on economic activity.
+- Example: Staggered adoption of governmental policies.
+- Recent popularity of causal inference is largely due to the researcher's clever use of quasi-experiments to identify causal effects.
 
 ## Reduced-form approach
 
+- We need to assume some structure and model to say anything about the causal effect of interest.
+- But how we impose the model have some leeway.
+- Complicated model might be imposing too much assumptions on the data generating process.
+- Reduced-form approach is a broad umbrella term for model that does not impose strong functional forms on the model and focus on the use of quasi-experiments or natural experiments to identify causal effects.
+
 ## Structural approach
 
-## What about program evaluation?
+- You will also hear (especially in Econ.) some people say they do "structrual"/"structual model" as opposed to "reduced-form".
+- The term "structure" here refers to a different conceptual layer than the structural model we talked about earlier (reduced-form is also structural in terms of the previous definition).
+- In general, this just mostly means opposite of "reduced-form". You have a more complex model or are estimating some sort of "primitive" parameters of interest.
+- Personally, I think this is a bit of a misnomer.
 
-## What about quasi-experiments?/natural experiments?
+## Conclusion
 
-## reduced-form vs. structural?
+How are these useful for non-economists?
 
-## Example
-
-### This is a subtitle
-
-Here we have some text that may run over several lines of the slide frame,
-depending on how long it is.
-
-- first item 
-    - A sub item
-
-Next, we'll brief review some theme-specific components.
-
-- Note that _all_ of the standard Reveal.js
-[features](https://quarto.org/docs/presentations/revealjs/)
-can be used with this theme, even if we don't highlight them here.
-
-## Additional theme classes
-
-### Some extra things you can do with the clean theme
-
-Special classes for emphasis
-
-- `.alert` class for default emphasis, e.g. [important note]{.alert}.
-- `.fg` class for custom colour, e.g. [important note]{.fg style="--col: #e64173"}.
-- `.bg` class for custom background, e.g. [important note]{.bg style="--col: #e64173"}.
-
-Cross-references
-
-- `.button` class provides a Beamer-like button, e.g.
-[[Summary]{.button}](#sec-summary)
-
-## Want more?
-
-### See our longer demo slides
-
-We've deliberarely kept this template lean, to get you up and running as fast as
-possible.
-
-We provide a separate
-[demo template](https://github.com/grantmcdermott/quarto-revealjs-clean-demo),
-with more examples for integrating code, tables, figures, etc.
-
-  - See the live demo slides
-  [here](https://grantmcdermott.com/quarto-revealjs-clean-demo/template.html).
-
-## Summary {#sec-summary}
-
-### A minimalist and elegant presentation theme
-
-The Quarto reveal.js clean theme aims to be a minimalist and elegant presention
-theme. Here are some options to get you started:
-
-Add the theme to an existing project.
-
-```{.bash}
-quarto install extension grantmcdermott/quarto-revealjs-clean
-```
-
-... or, create a new project using this slide deck as a lean template.
-
-```{.bash}
-quarto use template grantmcdermott/quarto-revealjs-clean
-```
-
-... or, create a new project using the demo slide deck as a full template.
-
-```{.bash}
-quarto use template grantmcdermott/quarto-revealjs-clean-demo
-```
+- Social scientists: Tools used in empirical economics are relatively topic-agnostic. Could be a nice tools to apply to your own research.
+- Non-social scientists: Notion of causal inference provides valuable perspective on how to think about the world.
