@@ -35,6 +35,14 @@ date: last-modified
 
 ## Example: legalized abortion and crime
 
+- Around 1990s, US has experienced a sharp decrease in crime rate (40 percent drop in homicide rate). [Why?]{.alert}
+- Novel explanation: Legalized abortion in 1970s.
+- Crime rates are high among young males (18-24). 
+- Mothers who have abortions are those most at risk to give birth to children who may engage in crime activity (teenagers, economically disadvantaged, etc).
+- Women can use abortion to optimize the timing of child-bearing.
+- They use various measures such as staggered adoption of abortion laws across states to identify the causal effect of legalized abortion on crime rate.
+- Results: Legalized abortion could have significantly reduced crime rate.
+
 ## Types of empirical work
 
 While taxonomy can vary, we can broadly categorize empirical work into three types: [descriptive (correlation) and structural (causation).]{.alert}
@@ -55,6 +63,10 @@ Usually a great starting point for empirical research.
 ![](cage.jpeg)
 
 - Many real world observations are correlated, but not always causally related.
+
+## Another example
+
+![](causal.png)
 
 ## But that is obvious!
 
